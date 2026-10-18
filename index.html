@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hasini Granite Measurement</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;padding:16px;background:#f2f4f7;color:#222}
+h2{text-align:center;color:#17365d}
+input{width:100%;box-sizing:border-box;padding:10px;margin:5px 0;border:1px solid #bbb;border-radius:6px}
+table{width:100%;border-collapse:collapse;background:white;margin-top:12px}
+th,td{border:1px solid #ccc;padding:6px;text-align:center}
+th{background:#17365d;color:white}
+button{padding:10px;margin:4px 2px;border:0;border-radius:6px;background:#17365d;color:white}
+.total{font-size:23px;font-weight:bold;color:#b00020}
+.amount{font-weight:bold;color:#087443}
+</style>
+</head>
+<body>
+<h2 contenteditable="true">Hasini Granite Measurement</h2>
+<label>Farm Name</label>
+<input id="farm" value="Hasini Granite">
+<label>Customer Name</label>
+<input id="customer" placeholder="Customer name">
+<label>Rate</label>
+<input id="rate" type="number" value="0" oninput="calc()">
+<table>
+<thead><tr><th>No.</th><th>Length</th><th>Width</th><th>Qty</th><th>Sq.ft</th><th>Amount</th></tr></thead>
+<tbody id="rows"></tbody>
+</table>
+<button onclick="addRow()">+ Add Row</button>
+<button onclick="copyRow()">Copy Last Row</button>
+<p>Total Sq.ft: <b id="sq">0.00</b></p>
+<p class="total">Total: ₹<span id="total">0.00</span></p>
+<p>Amount in words: <b id="words">Zero Rupees Only</b></p>
+<button onclick="window.print()">Print / Save PDF</button>
+<button onclick="downloadCSV()">Download Excel CSV</button>
+<script>
+function addRow(l='',w='',q=1){
+let r=document.createElement('tr');
+r.innerHTML='<td></td><td><input type="number" min="0" step="any" value="'+l+'" oninput="calc()"></td><td><input type="number" min="0" step="any" value="'+w+'" oninput="calc()"></td><td><input type="number" min="0" step="1" value="'+q+'" oninput="calc()"></td><td class="sq">0.00</td><td class="amount">0.00</td>';
+document.getElementById('rows').appendChild(r);calc();
+}
+function calc(){
+let s=0,a=0;
+[...document.querySelectorAll('#rows tr')].forEach((r,i)=>{
+r.cells[0].textContent=i+1;
+let v=[...r.querySelectorAll('input')].map(x=>Number(x.value)||0);
+let area=v[0]*v[1]*v[2]/144;
+let amt=area*(Number(document.getElementById('rate').value)||0);
+r.querySelector('.sq').textContent=area.toFixed(2);
+r.querySelector('.amount').textContent=amt.toFixed(2);
+s+=area;a+=amt;
+});
+document.getElementById('sq').textContent=s.toFixed(2);
+document.getElementById('total').textContent=a.toFixed(2);
+document.getElementById('words').textContent=numberWords(Math.round(a))+' Rupees Only';
+}
+function copyRow(){
+let r=document.querySelector('#rows tr:last-child');
+if(!r){addRow();return}
+let v=[...r.querySelectorAll('input')].map(x=>x.value);
+addRow(v[0],v[1],v[2]);
+}
+function numberWords(n){
+if(n===0)return 'Zero';
+const one=['','One','Two','Three','Four','Five','Six','Seven','Eight','Nine','Ten','Eleven','Twelve','Thirteen','Fourteen','Fifteen','Sixteen','Seventeen','Eighteen','Nineteen'];
+const ten=['','','Twenty','Thirty','Forty','Fifty','Sixty','Seventy','Eighty','Ninety'];
+function under(x){
+if(x<20)return one[x];
+if(x<100)return ten[Math.floor(x/10)]+(x%10?' '+one[x%10]:'');
+return one[Math.floor(x/100)]+' Hundred'+(x%100?' '+under(x%100):'');
+}
+let out=[];
+[['Crore',10000000],['Lakh',100000],['Thousand',1000],['',1]].forEach(([name,val])=>{
+let q=Math.floor(n/val);n%=val;
+if(q)out.push(under(q)+(name?' '+name:''));
+});
+return out.join(' ');
+}
+function downloadCSV(){
+let data=[['No','Length','Width','Qty','Sq.ft','Amount']];
+document.querySelectorAll('#rows tr').forEach((r,i)=>{
+data.push([i+1,...[...r.querySelectorAll('input')].map(x=>x.value),r.cells[4].textContent,r.cells[5].textContent]);
+});
+data.push(['','','','','Total Sq.ft',document.getElementById('sq').textContent]);
+data.push(['','','','','Total Amount',document.getElementById('total').textContent]);
+let csv=data.map(r=>r.join(',')).join('\n');
+let b=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Hasini-Granite-Measurement.csv';a.click();URL.revokeObjectURL(a.href);
+}
+addRow();addRow();addRow();
+</script>
+</body>
+</html>
