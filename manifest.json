@@ -1,7 +1,7 @@
 {
   "id": "./",
   "name": "HASINI GRANITE MEASUREMENT SHEET",
-  "short_name": "Hasini Granite",
+  "short_name": "Granite Measurement Sheet",
   "description": "Granite measurements, billing, customer accounts, PDF and CSV export.",
   "start_url": "./",
   "scope": "./",
